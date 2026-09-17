@@ -100,10 +100,20 @@ Summary: <one line — what changed and why>
 Leave the "Flagged for review" section out entirely when there's nothing to flag —
 don't manufacture filler.
 
-## Step 4 — Report
+## Step 4 — Lint (advisory)
+
+After writing `staged/`, run `python -m wpsync lint <name>`. It scans for leftover
+Google Docs export artifacts (inline `style=`, `font-family`, Google's
+`docs-internal-guid-*` ids) that the artifact-stripping rule in Step 3 should have
+already removed. This is a cheap sanity check, not a gate — include any findings in the
+Step 5 report so the human reviewer knows to double-check those specific files, but
+don't treat a clean lint as a substitute for reviewing the change reports.
+
+## Step 5 — Report
 
 Summarize for the user: which pages got a `staged/` file, which were skipped because
-nothing changed, and the total count of flagged items across all change reports (so they
-know how much of the review is routine vs. needs a decision). Point them at PLAN.md §8
-step 5 (paste) and step 6 (optional verify) as the next manual steps — this skill's job
-ends at `staged/` and `changes/`.
+nothing changed, the total count of flagged items across all change reports, and any
+lint findings from Step 4 (so they know how much of the review is routine vs. needs a
+decision). Point them at PLAN.md §8 step 5 (paste) and step 6 (verify — run
+`python -m wpsync verify <name>` after pasting, once `current/` has been re-dumped) as
+the next manual steps — this skill's job ends at `staged/` and `changes/`.

@@ -8,6 +8,8 @@ from pathlib import Path
 from wpsync.config import ConfigError, load_profile
 from wpsync.db import DatabaseError
 from wpsync.dump import dump_client, list_client
+from wpsync.lint import lint_staged
+from wpsync.verify import verify_client
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CLIENTS_DIR = REPO_ROOT / "clients"
@@ -56,6 +58,37 @@ def cmd_dump(client_name: str) -> int:
     return 0
 
 
+def cmd_verify(client_name: str) -> int:
+    client_dir = CLIENTS_DIR / client_name
+    result = verify_client(client_dir)
+
+    if result.checked == 0:
+        print("No staged/ files found to verify.")
+        return 0
+
+    for m in result.mismatches:
+        print(f"MISMATCH  {m.path}: {m.reason}")
+
+    ok_count = result.checked - len(result.mismatches)
+    print(f"\n{ok_count}/{result.checked} page(s) match current/")
+    return 1 if result.mismatches else 0
+
+
+def cmd_lint(client_name: str) -> int:
+    client_dir = CLIENTS_DIR / client_name
+    findings = lint_staged(client_dir)
+
+    if not findings:
+        print("No Google Docs export artifacts found in staged/.")
+        return 0
+
+    for path, hits in findings.items():
+        print(f"{path}: {', '.join(hits)}")
+
+    print(f"\n{len(findings)} file(s) flagged — advisory only, review before pasting.")
+    return 1
+
+
 def cmd_dump_all() -> int:
     succeeded = []
     failed = []
@@ -95,6 +128,12 @@ def build_parser() -> argparse.ArgumentParser:
     dump_p.add_argument("client", nargs="?")
     dump_p.add_argument("--all", action="store_true", help="dump every client with a profile")
 
+    verify_p = sub.add_parser("verify", help="diff staged/ against a freshly dumped current/")
+    verify_p.add_argument("client")
+
+    lint_p = sub.add_parser("lint", help="scan staged/ for leftover Google Docs export artifacts")
+    lint_p.add_argument("client")
+
     return parser
 
 
@@ -113,6 +152,10 @@ def main(argv=None) -> int:
             if not args.client:
                 parser.error("dump requires a client name, or --all")
             return cmd_dump(args.client)
+        if args.command == "verify":
+            return cmd_verify(args.client)
+        if args.command == "lint":
+            return cmd_lint(args.client)
     except ConfigError as e:
         print(f"Config error: {e}", file=sys.stderr)
         return 1
