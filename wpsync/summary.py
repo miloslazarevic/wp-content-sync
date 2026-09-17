@@ -43,10 +43,17 @@ def render_summary_html(client_name: str, label: str, pages: Dict[str, dict], wa
         )
         row_class = ' class="empty"' if is_empty else ""
         template = row.get("page_template") or "default"
+        # No current/<path>.html is written for empty pages (dump.py), so don't
+        # link to a file that doesn't exist.
+        path_cell = (
+            escape(path)
+            if is_empty
+            else f'<a href="current/{escape(path)}.html">{escape(path)}</a>'
+        )
         rows_html.append(
             f"<tr{row_class}>"
             f"<td>{row['ID']}</td>"
-            f'<td><a href="current/{escape(path)}.html">{escape(path)}</a></td>'
+            f"<td>{path_cell}</td>"
             f"<td><code>{escape(row.get('post_name') or '')}</code></td>"
             f"<td>{escape(row.get('post_title') or '')}</td>"
             f"<td>{escape(row.get('post_status') or '')}</td>"

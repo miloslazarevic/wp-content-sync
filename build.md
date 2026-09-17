@@ -46,11 +46,16 @@ guidance in PLAN.md where they conflict.
    This reverses PLAN.md §10's git-audit-trail design — real client site content
    shouldn't live in a repo that syncs to GitHub, even a private one. Only `profile.yml`
    and `CLAUDE.md` are tracked per client. See `CLAUDE.md`'s Git conventions section.
-8. **Empty-`post_content` pages are flagged automatically.** `dump`/`list` warn whenever
-   a page in scope has empty `post_content` — almost always ACF/flexible-content or a
-   page builder rather than the editor (PLAN.md §11's ACF gap, first hit for real on
-   UIC: 14 of 29 pages). `wpsync` has no postmeta dump yet, so these pages are excluded
-   per-client via `dump.exclude` in `profile.yml` until that's built.
+8. **Empty-`post_content` pages are listed, not excluded, but get no file.** `dump`
+   never writes `current/<path>.html` for a page with empty `post_content` — almost
+   always ACF/flexible-content or a page builder rather than the editor (PLAN.md §11's
+   ACF gap, first hit for real on UIC: 14 of 29 pages). The page still appears in
+   `pages.csv` (with a blank `file` column) and `summary.html` (flagged with an "empty"
+   badge) — hiding it via `dump.exclude` was tried first and rejected: it made pages
+   like `about/faq` invisible in the inventory, which is worse than an empty row. `dump`
+   also prints a console warning naming every affected path. `wpsync` still has no
+   postmeta dump; a mapping/merge round must never target one of these pages (see the
+   `wp-merge` skill's preconditions).
 9. **The dump also writes `summary.html`.** A single-file, browsable report per client
    (`clients/<name>/summary.html`, gitignored like the rest) — page ID, path (linked to
    `current/<path>.html`), slug, title, status, assigned page template, and an

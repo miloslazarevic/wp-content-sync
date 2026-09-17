@@ -70,6 +70,11 @@ block editor, stop and flag it rather than applying these rules blindly.
 **ACF gap.** `current/**.html` only ever contains `post_content`. If a client is
 ACF-heavy, some or all of what a Google Doc update targets may live in `postmeta`
 instead and won't appear here at all — see PLAN.md §11 and that client's `CLAUDE.md`.
+A page with empty `post_content` still appears in `pages.csv` and `summary.html`
+(flagged as empty) but has no `current/<path>.html` file — `pages.csv`'s `file` column
+is blank for it. Never treat that as "the page is blank, write fresh content" — the
+real content is in fields this tool can't see yet. Flag it back to the user instead of
+merging into it.
 
 ### Change report format (`changes/<path>.md`)
 

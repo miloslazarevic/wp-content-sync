@@ -53,11 +53,14 @@ Copied verbatim, never reformatted — seen across the dump:
 **ACF-heavy.** Every one of the 29 pages has ACF fields; 14 of 29 have **zero**
 `post_content` and are built entirely through ACF flexible-content fields (landing
 pages like `mba`, `home`, `online-mba*`, plus utility pages like `thanks`, `articles`,
-`index`, `about/faq`). Those 14 are excluded from this client's dump scope
-(`profile.yml` → `dump.exclude`) until wpsync has a postmeta dump — see build.md
-clarification #8. **Any content update round that targets one of the excluded pages
-cannot be handled by this tool yet** — flag it back to the user rather than guessing at
-which ACF fields to touch.
+`index`, `about/faq`). These 14 are still listed in `pages.csv` and `summary.html`
+(flagged with an "empty" badge) so they're visible in the inventory, but `dump` writes
+no `current/<path>.html` for them — there's nothing in `post_content` to write — and
+wpsync has no postmeta dump yet. **Any content update round that targets one of these
+pages cannot be handled by this tool yet** — a page listed in `pages.csv` with a blank
+`file` column means exactly this. Flag it back to the user rather than guessing at
+which ACF fields to touch, and never treat a missing `current/<path>.html` as "the page
+is blank, write fresh content" — the real content is in ACF fields this tool can't see.
 
 The remaining 15 in-scope pages aren't purely classic either: most also carry a handful
 of ACF fields alongside real `post_content` (hero text, CTAs, etc. — commonly under 10

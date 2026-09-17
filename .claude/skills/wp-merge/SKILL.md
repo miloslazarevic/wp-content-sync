@@ -22,6 +22,13 @@ Before starting, confirm:
 - `clients/<name>/CLAUDE.md` has its "Editor type" section filled in. If it says block
   editor, or is still a placeholder, stop and flag it rather than guessing — the wpautop
   merge rules below assume Classic Editor content.
+- Some rows in `pages.csv` may have a **blank `file` column** — that page had empty
+  `post_content` at dump time (usually ACF/flexible-content or a page builder; see the
+  ACF gap in root `CLAUDE.md` and that client's `CLAUDE.md`) and has no
+  `current/<path>.html`. If mapping would route a source section to one of these pages,
+  do not write anything for it in Step 3 — list it under "Unmatched source sections" in
+  `mapping.md` instead, noting it has no baseline this tool can merge into. Never treat
+  a missing baseline as "the page is blank, write fresh content."
 
 ## Step 0 — Clear stale round artifacts
 

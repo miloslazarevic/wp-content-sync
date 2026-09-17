@@ -43,13 +43,22 @@ def _normalize_line_endings(content: str) -> str:
     return content.replace("\r\n", "\n").replace("\r", "\n")
 
 
+def _has_content(row: dict) -> bool:
+    return bool((row["post_content"] or "").strip())
+
+
 def write_current(client_dir: Path, pages: Dict[str, dict]) -> None:
     current_dir = client_dir / "current"
     _clear_directory(current_dir)
     for path, row in pages.items():
+        if not _has_content(row):
+            # No post_content -- usually ACF/flexible-content or a page builder.
+            # The page is still listed in pages.csv and summary.html; there's just
+            # nothing to write here. See PLAN.md §11.
+            continue
         file_path = current_dir / f"{path}.html"
         file_path.parent.mkdir(parents=True, exist_ok=True)
-        content = _normalize_line_endings(row["post_content"] or "")
+        content = _normalize_line_endings(row["post_content"])
         file_path.write_bytes(content.encode("utf-8"))
 
 
@@ -64,7 +73,7 @@ def write_pages_csv(client_dir: Path, pages: Dict[str, dict]) -> None:
                 [
                     row["ID"],
                     path,
-                    f"current/{path}.html",
+                    f"current/{path}.html" if _has_content(row) else "",
                     row["post_title"],
                     row["post_status"],
                     row["post_modified"],
@@ -85,14 +94,15 @@ class DumpResult:
 
 
 def _warn_empty_content(pages: Dict[str, dict], warnings: List[str]) -> None:
-    empty = [path for path, row in pages.items() if not (row["post_content"] or "").strip()]
+    empty = [path for path, row in pages.items() if not _has_content(row)]
     if not empty:
         return
     warnings.append(
         f"{len(empty)} page(s) in scope have empty post_content — this usually means "
         "the page is built with ACF/flexible-content fields or a page builder rather "
-        "than the editor. That content will not appear in current/**.html. See "
-        "PLAN.md §11. Affected paths: " + ", ".join(sorted(empty))
+        "than the editor. No current/<path>.html is written for these; they're still "
+        "listed in pages.csv and summary.html, flagged as empty. See PLAN.md §11. "
+        "Affected paths: " + ", ".join(sorted(empty))
     )
 
 

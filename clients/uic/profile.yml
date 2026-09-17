@@ -22,22 +22,10 @@ dump:
   post_types: [page]
   post_status: [publish, draft]
   include: []        # list of page paths (no leading/trailing slash); empty = all
+  exclude: []         # list of page paths to skip, same format as include
 
-  # Excluded: these pages carry zero post_content -- they're built entirely with
-  # ACF/flexible-content fields in postmeta (see clients/uic/CLAUDE.md, PLAN.md §11).
-  # wpsync has no postmeta dump yet, so these are out of scope until that's built.
-  exclude:
-    - thanks
-    - mba
-    - online-mba
-    - mba-b
-    - online-mba-b
-    - online-mba-c
-    - online-mba-d
-    - homepage
-    - home
-    - welcome-back-online-mba
-    - welcome-back-flex-mba
-    - about/faq
-    - articles
-    - index
+  # 14 of these 29 pages have empty post_content -- built entirely with
+  # ACF/flexible-content fields in postmeta instead (see clients/uic/CLAUDE.md,
+  # PLAN.md §11). They're still listed here and in summary.html/pages.csv; dump
+  # just doesn't write a current/<path>.html for them since there's nothing in
+  # post_content to write.
