@@ -1,0 +1,43 @@
+name: uic
+label: "UIC Business"
+
+site:
+  # Path to the Local.app site's WordPress root (contains wp-config.php).
+  wp_path: "~/Local Sites/uic-business/app/public"
+
+database:
+  # Supply EXACTLY ONE of socket or host+port.
+  # Find both in Local.app -> select site -> Database tab.
+  socket: "~/Library/Application Support/Local/run/JATepPm5D/mysql/mysqld.sock"
+  # host: 127.0.0.1
+  # port: 10005
+
+  # Optional overrides. Normally omitted -- the runner reads these from wp-config.php.
+  # name: local
+  # user: root
+  # password: root
+  # table_prefix: wp_
+
+dump:
+  post_types: [page]
+  post_status: [publish, draft]
+  include: []        # list of page paths (no leading/trailing slash); empty = all
+
+  # Excluded: these pages carry zero post_content -- they're built entirely with
+  # ACF/flexible-content fields in postmeta (see clients/uic/CLAUDE.md, PLAN.md §11).
+  # wpsync has no postmeta dump yet, so these are out of scope until that's built.
+  exclude:
+    - thanks
+    - mba
+    - online-mba
+    - mba-b
+    - online-mba-b
+    - online-mba-c
+    - online-mba-d
+    - homepage
+    - home
+    - welcome-back-online-mba
+    - welcome-back-flex-mba
+    - about/faq
+    - articles
+    - index

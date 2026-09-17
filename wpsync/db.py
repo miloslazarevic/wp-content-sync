@@ -17,7 +17,7 @@ class DatabaseError(Exception):
 
 def connect(database: DatabaseConfig) -> pymysql.connections.Connection:
     kwargs = dict(
-        db=database.name,
+        database=database.name,
         user=database.user,
         password=database.password,
         charset="utf8mb4",
@@ -57,3 +57,23 @@ def fetch_pages(conn, table_prefix: str, post_types, post_status) -> list:
     with conn.cursor() as cursor:
         cursor.execute(sql, (tuple(post_types), tuple(post_status)))
         return list(cursor.fetchall())
+
+
+def fetch_page_templates(conn, table_prefix: str, post_ids) -> dict:
+    """Map post ID -> assigned page template (`_wp_page_template` postmeta)."""
+    if not TABLE_PREFIX_RE.match(table_prefix):
+        raise DatabaseError(
+            f"table_prefix '{table_prefix}' contains characters outside "
+            "[A-Za-z0-9_] and cannot be safely used in a query"
+        )
+    post_ids = list(post_ids)
+    if not post_ids:
+        return {}
+
+    sql = (
+        f"SELECT post_id, meta_value FROM {table_prefix}postmeta "
+        f"WHERE meta_key = %s AND post_id IN %s"
+    )
+    with conn.cursor() as cursor:
+        cursor.execute(sql, ("_wp_page_template", tuple(post_ids)))
+        return {row["post_id"]: row["meta_value"] for row in cursor.fetchall()}

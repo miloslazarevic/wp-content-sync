@@ -80,12 +80,19 @@ existing content the source contradicts.
 
 ## Git conventions
 
-- Commit messages: `[Type] Short description` — e.g. `[Add] Cal Lutheran profile`,
+- Commit messages: `[Type] Short description` — e.g. `[Add] UIC profile`,
   `[Fix] parent-chain path collision on duplicate slugs`.
-- Commit `current/` after every dump — each dump becomes a diff against the previous
-  one, a running audit trail of what changed in production between rounds.
-- `.gitignore` covers `__pycache__/`, `.venv/`, `*.pyc` only — the snapshots are the
-  point.
+- **Never commit pulled or generated WordPress content.** `current/`, `staged/`,
+  `changes/`, `incoming/`, `pages.csv`, `summary.html`, and `mapping.md` are gitignored
+  per client (see `.gitignore`) — it's real client site content and doesn't belong in a
+  repo that syncs to GitHub. Only a client's `profile.yml` and `CLAUDE.md` (config and
+  conventions, no site content) are tracked.
+  - This reverses PLAN.md §10's original design, which committed `current/` as a git
+    audit trail. That trade-off was accepted deliberately during the first real test
+    (UIC) — content privacy wins over the audit trail. There is currently no audit
+    trail across dumps; if that's ever needed again, it'll need a different mechanism
+    than committing raw content (e.g. a local-only history, not one that syncs to
+    GitHub).
 - **Never run `git commit` or `git push`, and never add commit co-authorship, on the
   user's behalf.** Hand over a ready-to-use commit message and let the user commit and
   push themselves — they review every change before it goes to GitHub.

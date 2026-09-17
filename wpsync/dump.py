@@ -7,8 +7,9 @@ from pathlib import Path
 from typing import Dict, List
 
 from wpsync.config import DumpConfig, Profile
-from wpsync.db import connect, fetch_pages
+from wpsync.db import connect, fetch_page_templates, fetch_pages
 from wpsync.paths import resolve_paths
+from wpsync.summary import render_summary_html
 
 
 def _normalize_scope_path(path: str) -> str:
@@ -35,13 +36,20 @@ def _clear_directory(dir_path: Path) -> None:
     dir_path.mkdir(parents=True, exist_ok=True)
 
 
+def _normalize_line_endings(content: str) -> str:
+    # WordPress's own wpautop() does exactly this ("\r\n"/"\r" -> "\n") as its
+    # first step before rendering, so this changes zero rendered output — it's
+    # not a content transform, just matching what WP already treats as equivalent.
+    return content.replace("\r\n", "\n").replace("\r", "\n")
+
+
 def write_current(client_dir: Path, pages: Dict[str, dict]) -> None:
     current_dir = client_dir / "current"
     _clear_directory(current_dir)
     for path, row in pages.items():
         file_path = current_dir / f"{path}.html"
         file_path.parent.mkdir(parents=True, exist_ok=True)
-        content = row["post_content"] or ""
+        content = _normalize_line_endings(row["post_content"] or "")
         file_path.write_bytes(content.encode("utf-8"))
 
 
@@ -76,6 +84,18 @@ class DumpResult:
     warnings: List[str]
 
 
+def _warn_empty_content(pages: Dict[str, dict], warnings: List[str]) -> None:
+    empty = [path for path, row in pages.items() if not (row["post_content"] or "").strip()]
+    if not empty:
+        return
+    warnings.append(
+        f"{len(empty)} page(s) in scope have empty post_content — this usually means "
+        "the page is built with ACF/flexible-content fields or a page builder rather "
+        "than the editor. That content will not appear in current/**.html. See "
+        "PLAN.md §11. Affected paths: " + ", ".join(sorted(empty))
+    )
+
+
 def list_client(profile: Profile) -> ListResult:
     conn = connect(profile.database)
     try:
@@ -85,16 +105,29 @@ def list_client(profile: Profile) -> ListResult:
             profile.dump.post_types,
             profile.dump.post_status,
         )
+        templates = fetch_page_templates(
+            conn, profile.database.table_prefix, [r["ID"] for r in rows]
+        )
     finally:
         conn.close()
 
     resolved, warnings = resolve_paths(rows)
+    for row in resolved.values():
+        row["page_template"] = templates.get(row["ID"]) or "default"
+
     scoped = apply_scope(resolved, profile.dump)
+    _warn_empty_content(scoped, warnings)
     return ListResult(pages=scoped, warnings=warnings)
+
+
+def write_summary_html(client_dir: Path, client_name: str, label: str, pages: Dict[str, dict], warnings: List[str]) -> None:
+    html = render_summary_html(client_name, label, pages, warnings)
+    (client_dir / "summary.html").write_text(html, encoding="utf-8")
 
 
 def dump_client(profile: Profile) -> DumpResult:
     result = list_client(profile)
     write_current(profile.client_dir, result.pages)
     write_pages_csv(profile.client_dir, result.pages)
+    write_summary_html(profile.client_dir, profile.name, profile.label, result.pages, result.warnings)
     return DumpResult(page_count=len(result.pages), warnings=result.warnings)

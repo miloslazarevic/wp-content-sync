@@ -337,11 +337,18 @@ such failure mode.
 Commit messages: `[Type] Short description` — e.g. `[Add] Cal Lutheran profile`,
 `[Fix] parent-chain path collision on duplicate slugs`.
 
-**Commit `current/` after every dump.** This is the quietly valuable part: each dump becomes
-a diff against the previous one, giving a running audit trail of what actually changed in
-production between rounds, across every client, without touching client repositories.
+~~**Commit `current/` after every dump.** This is the quietly valuable part: each dump
+becomes a diff against the previous one, giving a running audit trail of what actually
+changed in production between rounds, across every client, without touching client
+repositories.~~
 
-`.gitignore`: `__pycache__/`, `.venv/`, `*.pyc`. Nothing else — the snapshots are the point.
+**Superseded during the first real test (UIC).** Pulled/generated content
+(`current/`, `staged/`, `changes/`, `incoming/`, `pages.csv`, `summary.html`,
+`mapping.md`) is gitignored per client and never committed — it's real client site
+content and doesn't belong in a repo that syncs to GitHub, even a private one. Only
+`profile.yml` and `CLAUDE.md` are tracked per client. This drops the git-audit-trail
+benefit described above with no replacement yet; see `CLAUDE.md`'s Git conventions
+section for the current rule.
 
 Profiles contain Local.app database credentials, which are `root`/`root` on a local-only
 socket and carry no real exposure. The repo stays private regardless.

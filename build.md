@@ -36,6 +36,27 @@ just remove decisions that would otherwise get made ad hoc mid-implementation.
    mapping file that isn't `APPROVED`. This is a text convention, not enforced by anything
    beyond the merge skill checking it — matches the tool's manual-gate philosophy.
 
+### Learned during the first real test (UIC)
+
+Decisions made once real client data was in front of us — supersede the equivalent
+guidance in PLAN.md where they conflict.
+
+7. **Pulled/generated content is never committed.** `current/`, `staged/`, `changes/`,
+   `incoming/`, `pages.csv`, `summary.html`, and `mapping.md` are gitignored per client.
+   This reverses PLAN.md §10's git-audit-trail design — real client site content
+   shouldn't live in a repo that syncs to GitHub, even a private one. Only `profile.yml`
+   and `CLAUDE.md` are tracked per client. See `CLAUDE.md`'s Git conventions section.
+8. **Empty-`post_content` pages are flagged automatically.** `dump`/`list` warn whenever
+   a page in scope has empty `post_content` — almost always ACF/flexible-content or a
+   page builder rather than the editor (PLAN.md §11's ACF gap, first hit for real on
+   UIC: 14 of 29 pages). `wpsync` has no postmeta dump yet, so these pages are excluded
+   per-client via `dump.exclude` in `profile.yml` until that's built.
+9. **The dump also writes `summary.html`.** A single-file, browsable report per client
+   (`clients/<name>/summary.html`, gitignored like the rest) — page ID, path (linked to
+   `current/<path>.html`), slug, title, status, assigned page template, and an
+   empty/has-content badge, plus the same warnings `dump` prints to the console. Written
+   only by `dump`, never by `list` (which still writes nothing to disk, per PLAN.md §7).
+
 ---
 
 ## Phase 1 — Dump
@@ -111,8 +132,9 @@ Goal: `init`, `list`, `dump`, `dump --all` all work end-to-end against one real 
 - Confirm `pages.csv` matches the file tree written.
 - Re-run `dump` a second time with no DB changes — output must be byte-identical (checks
   determinism from clarification #4 and confirms no incidental reformatting).
-- `git add clients/cal-lutheran/current clients/cal-lutheran/pages.csv && git commit` —
-  confirm `.gitignore` (`__pycache__/`, `.venv/`, `*.pyc`) is the only exclusion in effect.
+- `git status` shows only `clients/cal-lutheran/profile.yml` and `CLAUDE.md` as
+  trackable — confirm `current/`, `pages.csv`, and `summary.html` are gitignored and
+  never staged (clarification #7: pulled content is never committed).
 
 **Do not write any other client's profile until this gate passes** (PLAN.md §12).
 

@@ -1,3 +1,15 @@
 __pycache__/
 .venv/
 *.pyc
+
+# Pulled/generated WordPress content -- never committed. It's real client site
+# content, not something that belongs in a repo that syncs to GitHub. Only a
+# client's profile.yml and CLAUDE.md (config/conventions, no site content) are
+# tracked. See CLAUDE.md "Git conventions".
+clients/*/current/
+clients/*/staged/
+clients/*/changes/
+clients/*/incoming/
+clients/*/pages.csv
+clients/*/summary.html
+clients/*/mapping.md
