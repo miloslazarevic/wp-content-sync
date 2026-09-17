@@ -1,0 +1,25 @@
+name: CHANGE_ME
+label: "Change Me"
+
+site:
+  # Path to the Local.app site's WordPress root (contains wp-config.php).
+  wp_path: "~/Local Sites/CHANGE_ME/app/public"
+
+database:
+  # Supply EXACTLY ONE of socket or host+port.
+  # Find both in Local.app -> select site -> Database tab.
+  socket: "~/Library/Application Support/Local/run/CHANGE_ME/mysql/mysqld.sock"
+  # host: 127.0.0.1
+  # port: 10005
+
+  # Optional overrides. Normally omitted -- the runner reads these from wp-config.php.
+  # name: local
+  # user: root
+  # password: root
+  # table_prefix: wp_
+
+dump:
+  post_types: [page]
+  post_status: [publish, draft]
+  include: []        # list of page paths (no leading/trailing slash); empty = all
+  exclude: []         # list of page paths to skip, same format as include
