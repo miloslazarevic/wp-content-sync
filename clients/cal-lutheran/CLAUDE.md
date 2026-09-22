@@ -46,10 +46,8 @@ attributes and quoting, never reordered or reformatted:
     Preserve whichever form is already on the page being merged — do not "fix" the
     quoting to be consistent, that's exactly the kind of opportunistic cleanup the
     change-discipline rule forbids.
-- `[home_url]` — a token used inline inside internal link `href`s (e.g. `href="[home_url]
-  /about/faq/"`), while *external* links (e.g. to callutheran.edu, veterans resources)
-  use plain hardcoded URLs with `target="_blank" rel="noopener"`. Don't convert one
-  style into the other.
+- `[home_url]` — the token for **every** internal link on this site. See the link rules
+  below; this one is not optional.
 - `[degree_options layout="tiles" program_type="..." school="..." filters="false"
   show_heading="false"]` — program listing widget.
 - `[pullpost-content pagename="..."]` — pulls another page's content by slug (seen
@@ -58,6 +56,26 @@ attributes and quoting, never reordered or reformatted:
   intros, deadline copy) — reused across many pages, edit the source snippet's page,
   not each occurrence.
 - `[lightcast_widget]`, `[media-id='...']`, `[i]` — embeds/icons, preserve as-is.
+
+## Link rules (non-negotiable)
+
+This site is served through a **reverse proxy**: the WordPress install lives at
+`https://www.callutheran.edu/programs/`. That proxy is the entire reason the
+`[home_url]` shortcode exists.
+
+1. **Every link to a page on this site uses `[home_url]/…`** — never a root-relative
+   `/programs/…` path and never a hardcoded `https://www.callutheran.edu/programs/…`
+   URL. Both of those break or bypass the proxy setup.
+   - `href="/programs/school-for-professional-and-continuing-studies/faq/"` → **wrong**
+   - `href="[home_url]/school-for-professional-and-continuing-studies/faq/"` → **right**
+   - Root-relative `/programs/` links do still exist in older live content. They are
+     legacy, not a convention to preserve — convert them whenever you touch a page.
+2. **Every outbound link opens in a new tab**: `target="_blank" rel="noopener"`. This
+   includes `https://www.callutheran.edu/…` URLs that sit *outside* `/programs/` (the
+   main university site, veterans pages, financial aid pages, IDEAS, etc.) — anything
+   that leaves this WordPress install counts as outbound, same domain or not.
+3. Corollary: `[home_url]` links and on-page anchors (`#curriculum`) never get
+   `target="_blank"`. `mailto:` links don't either.
 
 ## Known quirks
 
